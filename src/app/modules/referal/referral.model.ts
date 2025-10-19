@@ -14,6 +14,7 @@ const referralSchema = new Schema<IReferral>({
     required: true,
   },
   status: { type: String, enum: ['PENDING', 'CONVERTED'], default: 'PENDING' },
+  convertedAt: { type: Date, default: null },
 });
 
 referralSchema.index({ referralBy: 1 }, { unique: true });

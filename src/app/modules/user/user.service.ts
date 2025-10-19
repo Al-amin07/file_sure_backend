@@ -66,13 +66,13 @@ const register = async (payload: IUser, query: Record<string, unknown>) => {
       if (!isReferredByExist) {
         throw new ApppError(StatusCodes.NOT_FOUND, 'Referral user not found');
       }
-      await User.findByIdAndUpdate(
-        result[0]?.id,
-        {
-          referredBy: isReferredByExist?.id,
-        },
-        { new: true, session },
-      );
+      // await User.findByIdAndUpdate(
+      //   result[0]?.id,
+      //   {
+      //     referredBy: isReferredByExist?.id,
+      //   },
+      //   { new: true, session },
+      // );
       await Referral.create(
         [
           {

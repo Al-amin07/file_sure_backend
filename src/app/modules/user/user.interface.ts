@@ -5,7 +5,7 @@ export interface IUser {
   password: string;
   email: string;
   referralCode: string;
-  referredBy: Types.ObjectId;
-  referralConverted: boolean;
+  // referredBy: Types.ObjectId;
+  // referralConverted: boolean;
   balance: number;
 }
