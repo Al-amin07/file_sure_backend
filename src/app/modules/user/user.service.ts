@@ -8,6 +8,7 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import { StatusCodes } from 'http-status-codes';
 import { Referral } from '../referal/referral.model';
+import { verifyToken } from '../../utils/verifyToken';
 // const register = async (payload: IUser, query: Record<string, unknown>) => {
 //   const referradBy = query?.r;
 //   if (payload?.password.length < 6) {
@@ -66,13 +67,6 @@ const register = async (payload: IUser, query: Record<string, unknown>) => {
       if (!isReferredByExist) {
         throw new ApppError(StatusCodes.NOT_FOUND, 'Referral user not found');
       }
-      // await User.findByIdAndUpdate(
-      //   result[0]?.id,
-      //   {
-      //     referredBy: isReferredByExist?.id,
-      //   },
-      //   { new: true, session },
-      // );
       await Referral.create(
         [
           {
@@ -84,11 +78,16 @@ const register = async (payload: IUser, query: Record<string, unknown>) => {
       );
     }
 
-    // Commit the transaction
+    const tokenData = {
+      id: result[0]?.id,
+      name: result[0]?.name,
+      email: result[0]?.email,
+      referalCode: result[0]?.referralCode,
+    };
+    const accessToken = await generateAccessToken(tokenData);
     await session.commitTransaction();
     session.endSession();
-
-    return result;
+    return { accessToken };
   } catch (error) {
     // Rollback transaction
     await session.abortTransaction();
@@ -117,6 +116,17 @@ const login = async (payload: { email: string; password: string }) => {
   };
   const accessToken = await generateAccessToken(tokenData);
   return { accessToken };
+};
+
+const state = async (token: string) => {
+  if (!token) {
+    throw new ApppError(StatusCodes.UNAUTHORIZED, 'No token found');
+  }
+  const decoded = await verifyToken(token);
+  const referral = await Referral.find({
+    referralBy: (decoded as any).id,
+  }).populate({ path: 'referralTo' });
+  return referral;
 };
 
 export const userService = {

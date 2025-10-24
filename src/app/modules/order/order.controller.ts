@@ -12,7 +12,19 @@ const createOrder = catchAsync(async (req, res) => {
     statusCode: StatusCodes.CREATED,
   });
 });
+const orderHistory = catchAsync(async (req, res) => {
+  const token = req.headers.authorization;
+  console.log({ token });
+  const result = await orderService.orderHistory(token as string);
+  sendResponse(res, {
+    data: result,
+    message: 'Order palced successfully',
+    success: true,
+    statusCode: StatusCodes.CREATED,
+  });
+});
 
 export const orderController = {
   createOrder,
+  orderHistory,
 };

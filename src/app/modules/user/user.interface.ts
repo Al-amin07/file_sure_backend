@@ -1,11 +1,22 @@
-import { Types } from 'mongoose';
+// interface ICourse {
+//   id: number;
+//   title: string;
+//   description: string;
+//   category: string;
+//   level: 'Beginner' | 'Intermediate' | 'Advanced';
+//   price: number;
+//   rating: number;
+//   students: number;
+//   image: string;
+//   instructor: string;
+//   duration: string;
+// }
 
 export interface IUser {
   name: string;
   password: string;
   email: string;
   referralCode: string;
-  // referredBy: Types.ObjectId;
-  // referralConverted: boolean;
+  // courses?: ICourse[];
   balance: number;
 }

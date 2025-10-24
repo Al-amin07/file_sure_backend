@@ -1,22 +1,35 @@
 import mongoose from 'mongoose';
 import { Referral } from '../referal/referral.model';
 import { User } from '../user/user.model';
+import { IOrder } from './order.interface';
+import { Order } from './order.model';
+import { verifyToken } from '../../utils/verifyToken';
+import ApppError from '../../error/Apperror';
+import { StatusCodes } from 'http-status-codes';
 
-const createOrder = async (payload: { id: string }) => {
-  const isUserExist = await User.findOne({ id: payload?.id });
+const createOrder = async (payload: IOrder) => {
+  const isUserExist = await User.findOne({ id: payload?.orderBy });
   const isReferralExist = await Referral.findOne({
-    referralTo: payload?.id,
+    referralTo: payload?.orderBy,
   });
+
   console.log({ isUserExist, isReferralExist });
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     if (isReferralExist && isReferralExist?.status === 'PENDING') {
-      const updatedUser = await User.findByIdAndUpdate(
-        isUserExist?.id,
+      await User.findByIdAndUpdate(
+        isReferralExist?.referralTo,
         {
-          balance: (isUserExist?.balance as number) + 2,
+          $inc: { balance: 2 },
+        },
+        { new: true, session },
+      );
+      await User.findByIdAndUpdate(
+        isReferralExist?.referralBy,
+        {
+          $inc: { balance: 2 },
         },
         { new: true, session },
       );
@@ -25,9 +38,11 @@ const createOrder = async (payload: { id: string }) => {
         { status: 'CONVERTED', convertedAt: Date() },
       );
     }
-    // Commit the transaction
+
+    const result = await Order.create(payload);
     await session.commitTransaction();
     session.endSession();
+    return result;
   } catch (error) {
     // Rollback transaction
     await session.abortTransaction();
@@ -36,6 +51,25 @@ const createOrder = async (payload: { id: string }) => {
   }
 };
 
+const orderHistory = async (token: string) => {
+  if (!token) {
+    throw new ApppError(StatusCodes.UNAUTHORIZED, 'No token found');
+  }
+  const decoded = await verifyToken(token);
+  console.log({ decoded });
+  const result = await Order.find({ orderBy: (decoded as any).id });
+  console.log({ decoded });
+  const referral = await Referral.find({
+    referralBy: (decoded as any).id,
+  }).populate({ path: 'referralTo' });
+  return {
+    order: result,
+    referral,
+  };
+  // return result;
+};
+
 export const orderService = {
   createOrder,
+  orderHistory,
 };
