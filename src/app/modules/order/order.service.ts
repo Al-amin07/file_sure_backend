@@ -58,13 +58,16 @@ const orderHistory = async (token: string) => {
   const decoded = await verifyToken(token);
   console.log({ decoded });
   const result = await Order.find({ orderBy: (decoded as any).id });
-  console.log({ decoded });
+
   const referral = await Referral.find({
     referralBy: (decoded as any).id,
   }).populate({ path: 'referralTo' });
+  const user = await User.findById((decoded as any).id);
+  console.log({ user });
   return {
     order: result,
     referral,
+    user,
   };
   // return result;
 };

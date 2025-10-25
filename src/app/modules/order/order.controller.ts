@@ -18,7 +18,7 @@ const orderHistory = catchAsync(async (req, res) => {
   const result = await orderService.orderHistory(token as string);
   sendResponse(res, {
     data: result,
-    message: 'Order palced successfully',
+    message: 'History retrived successfully',
     success: true,
     statusCode: StatusCodes.CREATED,
   });
