@@ -55,7 +55,12 @@ const orderHistory = async (token: string) => {
   if (!token) {
     throw new ApppError(StatusCodes.UNAUTHORIZED, 'No token found');
   }
-  const decoded = await verifyToken(token);
+  let decoded;
+  try {
+    decoded = await verifyToken(token);
+  } catch (error) {
+    throw new ApppError(StatusCodes.UNAUTHORIZED, 'Unauthorizr user');
+  }
   console.log({ decoded });
   const result = await Order.find({ orderBy: (decoded as any).id });
 

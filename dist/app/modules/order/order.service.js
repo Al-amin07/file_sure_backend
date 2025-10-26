@@ -54,7 +54,13 @@ const orderHistory = (token) => __awaiter(void 0, void 0, void 0, function* () {
     if (!token) {
         throw new Apperror_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'No token found');
     }
-    const decoded = yield (0, verifyToken_1.verifyToken)(token);
+    let decoded;
+    try {
+        decoded = yield (0, verifyToken_1.verifyToken)(token);
+    }
+    catch (error) {
+        throw new Apperror_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'Unauthorizr user');
+    }
     console.log({ decoded });
     const result = yield order_model_1.Order.find({ orderBy: decoded.id });
     const referral = yield referral_model_1.Referral.find({
